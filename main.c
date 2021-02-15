@@ -14,7 +14,7 @@ Code, Compile, Run and Debug online from anywhere in world.
 typedef struct mem_block {
     struct mem_block *next;
     struct mem_block *prev;
-    //int size;
+    //int size; struct size + payload
     //bool free;
 } BLOCK;
 #define block_size sizeof(struct mem_block)
@@ -41,7 +41,7 @@ void memory_init(void *ptr, unsigned int size) {
 
     printf("adress of head[0] %p \n adress of ptr[0] %p\n", &*head, &*ptr);
     printf("block size %d\n",block_size);
-    printf("first available block of memory from head %p \nfirst available block of memory from ptr %p\n", &(*(head + block_size)), &*(ptr + block_size));
+    printf("first available block of memory from head %p \nfirst available block of memory from ptr %p\n", &*(head + block_size), &*(ptr + block_size));
 }
 
 int main() {
