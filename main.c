@@ -9,6 +9,7 @@ typedef struct mem_block {
     int size;
     bool free;
 } BLOCK;
+#define block_size sizeof(mem_block)
 BLOCK *head;
 
 void *memory_alloc(unsigned int size) {
@@ -24,9 +25,10 @@ int memory_check(void *ptr) {}
 void memory_init(void *ptr, unsigned int size) {
     head = ptr;
     head->size = size;
+    head->free = true;
 
     printf("%p \n", &*head);
-    printf("%d",head->size);
+    printf("%d", head->size);
 }
 
 int main() {
