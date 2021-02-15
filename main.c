@@ -1,11 +1,3 @@
-/******************************************************************************
-
-Welcome to GDB Online.
-GDB online is an online compiler and debugger tool for C, C++, Python, Java, PHP, Ruby, Perl,
-C#, VB, Swift, Pascal, Fortran, Haskell, Objective-C, Assembly, HTML, CSS, JS, SQLite, Prolog.
-Code, Compile, Run and Debug online from anywhere in world.
-
-*******************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,7 +5,7 @@ Code, Compile, Run and Debug online from anywhere in world.
 
 typedef struct mem_block {
     struct mem_block *next;
-    struct mem_block *prev;
+
     //int size; struct size + payload
     //bool free;
 } BLOCK;
@@ -37,7 +29,7 @@ void memory_init(void *ptr, unsigned int size) {
     head = ptr;
     //head->size = size;
     //head->free = true;
-    head->prev = NULL;
+    //head->prev = NULL;
 
     printf("adress of head[0] %p \n adress of ptr[0] %p\n", &*head, &*ptr);
     printf("block size %d\n",block_size);
