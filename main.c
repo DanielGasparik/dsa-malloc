@@ -26,10 +26,10 @@ void memory_init(void *ptr, unsigned int size) {
     if (head != NULL) {
         head = NULL;
     }
-    head = ptr;
-    head->size = size;
-    head->free = true;
-    head->prev = NULL;
+    //head = ptr;
+   // head->size = size;
+   // head->free = true;
+    //head->prev = NULL;
 
     printf("adress of head[0] %p \n adress of ptr[0] %p\n", &*head, &*ptr);
     printf("block size %d\n",block_size);
