@@ -21,7 +21,7 @@ void *memory_alloc(unsigned int size) {
 int memory_free(void *valid_ptr) {}
 
 int memory_check(void *ptr) {
-    if(head == NULL || head == NULL) {
+    if(head == NULL || ptr == NULL) {
         return 0;
     }
 }
