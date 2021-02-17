@@ -6,7 +6,7 @@
 typedef struct mem_block {
     struct mem_block *next;
     struct mem_block *prev;
-    int size; //struct size + payload
+    unsigned int size; //struct size + payload
     bool free;
 } BLOCK;
 #define block_size sizeof(struct mem_block)
@@ -20,14 +20,19 @@ void *memory_alloc(unsigned int size) {
 
 int memory_free(void *valid_ptr) {}
 
-int memory_check(void *ptr) {}
+int memory_check(void *ptr) {
+    if(head == NULL || head == NULL) {
+        return 0;
+    }
+}
 
 void memory_init(void *ptr, unsigned int size) {
-    if (head != NULL) {
+     if (head != NULL) {
         head = NULL;
     }
-    //head = ptr;
-   // head->size = size;
+   
+   
+   //head->size = size;
    // head->free = true;
     //head->prev = NULL;
 
