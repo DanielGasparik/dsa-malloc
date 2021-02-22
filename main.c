@@ -24,6 +24,8 @@ int memory_check(void *ptr) {
     if(head == NULL || ptr == NULL) {
         return 0;
     }
+
+    return 1;
 }
 
 void memory_init(void *ptr, unsigned int size) {
