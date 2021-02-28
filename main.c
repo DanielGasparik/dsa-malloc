@@ -10,11 +10,35 @@ typedef struct mem_block {
 } BLOCK;
 #define block_size sizeof(BLOCK)
 void *head;
+//TODO find free
+void *find_free_block(unsigned int size){
+    BLOCK* tmp1 = (BLOCK*)head;
+    BLOCK* best_fiit = NULL;
+    unsigned int rozdiel_best = -1, rozdiel_temp;
+    while(tmp1->next!=NULL){
 
+        if(tmp1->size>=size){
+            rozdiel_temp = tmp1->size-size;
+            if (rozdiel_best == -1){rozdiel_best == rozdiel_temp;}
+            if(rozdiel_temp<=rozdiel_best){
+                best_fiit = tmp1;
+            }
+
+        }
+
+        tmp1 = tmp1->next;
+    }
+    return best_fiit;
+}
 void *memory_alloc(unsigned int size) {
-    if (head == NULL) {
+    if (head == NULL || size <= 0 || size>=((BLOCK*)head)->next->size) {
         return NULL;
     }
+    void *ptr = ((BLOCK*)head)->next+block_size;
+    ((BLOCK*)head)->next = ptr+size;//((BLOCK*)head)->next+block_size+size;
+    ((BLOCK*)head)->next->size = ((BLOCK*)head)->size-
+    return ptr;
+
 }
 
 int memory_free(void *valid_ptr) {}
@@ -43,20 +67,21 @@ void memory_init(void *ptr, unsigned int size) {
 
 
 
-    printf("adress of head[0] %p \n adress of ptr[0] %p\n", &*head, &*ptr);
+    printf("adress of head[0] %d \n adress of ptr[0] %d\n", &*head, &*ptr);
     printf("block size %lu\n",block_size);
-    printf("first available block of memory from head %p \nfirst available block of memory from ptr %p\n", &*(head+block_size), &*(ptr+block_size));
+    printf("first available block of memory from head %d \nfirst available block of memory from ptr %d\n", &*(head+block_size), &*(ptr+block_size));
 }
 
 int main() {
-    char region[50];
+    char region[100];
 
-    printf(" original mempool[0] adress %p\n", &region[0]);
-    memory_init(region, 50);
-    printf("adresa headu %d\n next free block %d\n head size %d\n",head, ((BLOCK*)head)->next, ((BLOCK*)head)->next->size);
+    printf(" original mempool[0] adress %d\n", &region[0]);
+    memory_init(region, 100);
+    printf("adresa headu %d\n next free block %d\n size left after main head and first free block head %d\n",head, ((BLOCK*)head)->next, ((BLOCK*)head)->next->size);
 
-    printf("original mempool first available adress %p\n", &region[block_size]);
+    printf("original mempool first available adress %d\n", &region[block_size]);
     char *pointer = (char *) memory_alloc(10);
+    printf("%d ppinter adress",&pointer);
     if (pointer) {
         memset(pointer, 0, 10);
     }
