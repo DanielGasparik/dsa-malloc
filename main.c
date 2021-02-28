@@ -7,7 +7,6 @@ typedef struct mem_block {
     struct mem_block *next;
     struct mem_block *prev;
     unsigned int size; //struct size + payload
-    bool free;
 } BLOCK;
 #define block_size sizeof(struct mem_block)
 void *head;
@@ -29,14 +28,13 @@ int memory_check(void *ptr) {
 }
 
 void memory_init(void *ptr, unsigned int size) {
-     if (head != NULL) {
-        head = NULL;
-    }
-   
-   
-   //head->size = size;
-   // head->free = true;
-    //head->prev = NULL;
+
+    head = ptr;
+    memset(head,0,size);
+    BLOCK* temp = (BLOCK*)head;
+    temp->size = size;
+    temp->prev = NULL;
+
 
     printf("adress of head[0] %p \n adress of ptr[0] %p\n", &*head, &*ptr);
     printf("block size %lu\n",block_size);
