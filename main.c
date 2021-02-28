@@ -13,30 +13,33 @@ void *head;
 //TODO find free
 void *find_free_block(unsigned int size){
     BLOCK* tmp1 = (BLOCK*)head;
+    BLOCK* tmp2 = ((BLOCK*)head)->next;
     BLOCK* best_fiit = NULL;
     unsigned int rozdiel_best = -1, rozdiel_temp;
-    while(tmp1->next!=NULL){
+    while(tmp2->next!=NULL){
 
-        if(tmp1->size>=size){
-            rozdiel_temp = tmp1->size-size;
+        if(tmp2->size>=size){
+            rozdiel_temp = tmp2->size-size;
             if (rozdiel_best == -1){rozdiel_best == rozdiel_temp;}
             if(rozdiel_temp<=rozdiel_best){
-                best_fiit = tmp1;
+                best_fiit = tmp2;
             }
 
         }
-
-        tmp1 = tmp1->next;
+        tmp1 = tmp2;
+        tmp2 = tmp2->next;
     }
+    tmp1->next = tmp2->next;
+    tmp2->next = NULL;
     return best_fiit;
 }
 void *memory_alloc(unsigned int size) {
-    if (head == NULL || size <= 0 || size>=((BLOCK*)head)->next->size) {
+    if (head == NULL || size <= 0 ) {
         return NULL;
     }
     void *ptr = ((BLOCK*)head)->next+block_size;
     ((BLOCK*)head)->next = ptr+size;//((BLOCK*)head)->next+block_size+size;
-    ((BLOCK*)head)->next->size = ((BLOCK*)head)->size-
+    ((BLOCK*)head)->next->size = ((BLOCK*)head)->size-size-block_size;
     return ptr;
 
 }
@@ -81,7 +84,7 @@ int main() {
 
     printf("original mempool first available adress %d\n", &region[block_size]);
     char *pointer = (char *) memory_alloc(10);
-    printf("%d ppinter adress",&pointer);
+    printf("%d pointer adress",&pointer);
     if (pointer) {
         memset(pointer, 0, 10);
     }
