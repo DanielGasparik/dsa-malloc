@@ -8,7 +8,7 @@ typedef struct mem_block {
     struct mem_block *prev;
     unsigned int size; //struct size + payload
 } BLOCK;
-#define block_size sizeof(struct mem_block)
+#define block_size sizeof(BLOCK)
 void *head;
 
 void *memory_alloc(unsigned int size) {
@@ -32,8 +32,15 @@ void memory_init(void *ptr, unsigned int size) {
     head = ptr;
     memset(head,0,size);
     BLOCK* temp = (BLOCK*)head;
-    temp->size = size;
+    BLOCK* temp2 = head+block_size;
+    temp->size = size-block_size;
     temp->prev = NULL;
+    temp2->size = temp->size - block_size;
+    temp->next = temp2;
+    temp2->next = NULL;
+    temp2->prev = NULL;
+
+
 
 
     printf("adress of head[0] %p \n adress of ptr[0] %p\n", &*head, &*ptr);
@@ -46,6 +53,8 @@ int main() {
 
     printf(" original mempool[0] adress %p\n", &region[0]);
     memory_init(region, 50);
+    printf("adresa headu %d\n next free block %d\n head size %d\n",head, ((BLOCK*)head)->next, ((BLOCK*)head)->next->size);
+
     printf("original mempool first available adress %p\n", &region[block_size]);
     char *pointer = (char *) memory_alloc(10);
     if (pointer) {
