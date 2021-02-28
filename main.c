@@ -100,7 +100,7 @@ int memory_free(void *valid_ptr) {
     return 0;
 
 }
-
+//TODO memory check
 int memory_check(void *ptr) {
     if (head == NULL || ptr == NULL) {
         return 0;
