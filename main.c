@@ -105,6 +105,10 @@ int memory_check(void *ptr) {
     if (head == NULL || ptr == NULL) {
         return 0;
     }
+    BLOCK * check = ptr-block_size;
+    if(!check || check->size<0){
+        return 0;
+    }
 
     return 1;
 }
