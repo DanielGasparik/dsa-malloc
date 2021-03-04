@@ -78,6 +78,9 @@ void *memory_alloc(unsigned int size) {
         next->prev = ((BLOCK *) free);
 
     }
+    printf("Adresa mallocovaneho void %d\n",free);
+    printf("Adresa mallocovaneho void+1 %d\n",free+1);
+    printf("Adresa mallocovaneho void+blocksize %d\n",free+block_size);
     return free + block_size;
     //return free+block_size;
 
@@ -89,7 +92,7 @@ void *memory_alloc(unsigned int size) {
 }
 
 int memory_free(void *valid_ptr) {
-    valid_ptr = valid_ptr - block_size;//zaciatok hlavicky;
+    valid_ptr -= block_size;//zaciatok hlavicky;
     BLOCK *help = valid_ptr;
     if (help->size < 0) {
         return 1;//nemame co odalokovat
@@ -127,6 +130,7 @@ int memory_check(void *ptr) {
             help = help->next;
         }
         if (iterator == ptr) {
+            if(iterator>=help&&iterator<=help+block_size){return 0;}
             if (help->size < 0) { return 0; }
         }
     }
@@ -191,6 +195,7 @@ void z1_testovac(char *region, char **pointer, int minBlock, int maxBlock, int m
     if (testFragDefrag) {
         do {
             pointer[i] = memory_alloc(8);
+            //printf("Adresa mallocovaneho %p\n",pointer[i]);
             if (pointer[i])
                 i++;
         } while (pointer[i]);
@@ -210,6 +215,7 @@ void z1_testovac(char *region, char **pointer, int minBlock, int maxBlock, int m
         allocated += random;
         allocated_count++;
         pointer[i] = memory_alloc(random);
+        //printf("Adresa mallocovaneho %p\n",pointer[i]);
         if (pointer[i]) {
             i++;
             mallocated_count++;
