@@ -441,16 +441,16 @@ void test4() {
         random = rand_int(8, 50000);
 
     }
-    /*
+
     for (int j = 0;; j++) {
-        if (memory_check(ptr[j * 2]) && memory_check(ptr[j * 2 + 1])) {
+        if (memory_check(ptr[j * 2]) && memory_check(ptr[j * 2 - 1])) {
             memory_free(ptr[j * 2]);
-            memory_free(ptr[j * 2 + 1]);
+            memory_free(ptr[j * 2 - 1]);
         }
         if(j==3){
             break;
         }
-    }*/
+    }
 
     iterate();
     frag_printout(100000);
