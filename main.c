@@ -9,7 +9,6 @@ typedef struct mem_block {
 } BLOCK;
 #define block_size sizeof(BLOCK)
 void *head = NULL;
-//TODO find free
 
 void iterate() {
     void *iterator = (BLOCK *) head;
@@ -43,7 +42,7 @@ void *find_free_block(unsigned int size) {
 
 void *memory_alloc(unsigned int size) {
     if (head == NULL || size <= 0) {
-        printf("Size is smaller than 0 or hea points to NULL(bad initialization)\n");
+        printf("Size is smaller than 0 or head points to NULL(bad initialization)\n");
         return NULL;
     }
     void *free = find_free_block(size);
@@ -52,7 +51,6 @@ void *memory_alloc(unsigned int size) {
         printf("Not enough room to allocate a ptr of size %d\n", size);
         return NULL;
     } else {
-        //free->next = free+block_size+size;
         BLOCK *next = free + block_size + size;
         next->size = ((BLOCK *) free)->size + block_size + size;
         ((BLOCK *) free)->size = (int) size;
@@ -94,7 +92,6 @@ int memory_free(void *valid_ptr) {
 
 }
 
-//TODO memory check
 int memory_check(void *ptr) {
     BLOCK *help = head;
     void *iterator;
@@ -355,9 +352,9 @@ void test2() {
     memory_init(region3, 200);
     while ((ptr3[i++] = memory_alloc(random)) != NULL) {
         random = rand_int(8, 24);
-        if(i==2){
-            if(memory_check(ptr3[i-1])){
-                memory_free(ptr3[i-1]);
+        if (i == 2) {
+            if (memory_check(ptr3[i - 1])) {
+                memory_free(ptr3[i - 1]);
             }
         }
 
@@ -379,7 +376,8 @@ void test3() {
     int i = 0;
     int random = rand_int(500, 5000);
     printf("\n\n/-------------------TEST3a---------------/\n");
-    printf("Region size = 1000\nHead size = %d\nMaximum size you can alloc: %d\n", block_size, 1000 - (2 * block_size)-1);
+    printf("Region size = 1000\nHead size = %d\nMaximum size you can alloc: %d\n", block_size,
+           1000 - (2 * block_size) - 1);
     memory_init(region1, 1000);
     while ((ptr[i++] = memory_alloc(random)) != NULL) {
         random = rand_int(500, 5000);
@@ -389,35 +387,36 @@ void test3() {
     frag_printout(1000);
 
     printf("\n\n/-------------------TEST3b---------------/\n");
-    printf("Region size = 10000\nHead size = %d\nMaximum size you can alloc: %d\n", block_size, 10000 - (2 * block_size));
+    printf("Region size = 10000\nHead size = %d\nMaximum size you can alloc: %d\n", block_size,
+           10000 - (2 * block_size));
     random = rand_int(500, 5000);
     i = 0;
     memory_init(region2, 10000);
     while ((ptr2[i++] = memory_alloc(random)) != NULL) {
         random = rand_int(500, 5000);
-        if (i == 1) {
-            if (memory_check(ptr2[i])) {
-                memory_free(ptr2[i]);
-            }
-        }
+
 
     }
-    memory_free(ptr2[0]);
+    if (memory_check(ptr2[1]) && memory_check(ptr2[2])) {
+        memory_free(ptr2[1]);
+        memory_free(ptr2[2]);
+    }
     iterate();
     frag_printout(10000);
 
 
     printf("\n\n/-------------------TEST3c---------------/\n");
-    printf("Region size = 31234\nHead size = %d\nMaximum size you can alloc: %d\n", block_size, 31234 - (2 * block_size));
+    printf("Region size = 31234\nHead size = %d\nMaximum size you can alloc: %d\n", block_size,
+           31234 - (2 * block_size));
 
     random = rand_int(500, 5000);
     i = 0;
     memory_init(region3, 31234);
     while ((ptr3[i++] = memory_alloc(random)) != NULL) {
         random = rand_int(500, 5000);
-        if(i==2){
-            if(memory_check(ptr3[i-1])){
-                memory_free(ptr3[i-1]);
+        if (i == 2) {
+            if (memory_check(ptr3[i - 1])) {
+                memory_free(ptr3[i - 1]);
             }
         }
 
@@ -430,6 +429,31 @@ void test3() {
 }
 
 void test4() {
+    char region1[1000000];
+    char *ptr[1000];
+    int i = 0;
+    int random = rand_int(8, 5000);
+    printf("\n\n/-------------------TEST4---------------/\n");
+    printf("Region size = 100000\nHead size = %d\nMaximum size you can alloc: %d\n", block_size,
+           100000 - (2 * block_size) - 1);
+    memory_init(region1, 100000);
+    while ((ptr[i++] = memory_alloc(random)) != NULL) {
+        random = rand_int(8, 50000);
+
+    }
+    /*
+    for (int j = 0;; j++) {
+        if (memory_check(ptr[j * 2]) && memory_check(ptr[j * 2 + 1])) {
+            memory_free(ptr[j * 2]);
+            memory_free(ptr[j * 2 + 1]);
+        }
+        if(j==3){
+            break;
+        }
+    }*/
+
+    iterate();
+    frag_printout(100000);
 
 }
 
