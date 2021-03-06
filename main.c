@@ -1,19 +1,48 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+/*
+ * Prostredie CLion - Daniel Gašparík , kompilátor - CLang
+ * implementácia 1 projektu z DSA
+ *
+ * @author Daniel Gašparík
+ *
+ *
+ * My implementation of memory_alloc is based on the implicit linked list of memory blocks
+ * Each node of the list contains a pointer to the next and previous node
+ * To keep track whether the memory is free or not, I simply multiply the size of the payload by -1
+ * If the memory is free size of the payload is <0, if it is >0 then the memory is allocated
+ *
+ * */
 
 typedef struct mem_block {
+    //next block
     void *next;
+    //previous block
     void *prev;
+    //size of the payload; can be >0(if occupied) or <0(if free)
     int size; //struct size + payload
 } BLOCK;
+//size of block macro, clang, macOS 10.15.5 -> 24B
 #define block_size sizeof(BLOCK)
+//global pointer
 void *head = NULL;
 
+/*********** IMPLEMENTATION OF FUNCTIONS STARTS HERE ***********/
+
 void iterate() {
+    /** \brief Iterates through the linked list of memory blocks and prints all the information it can get such as:
+     * Address of the block's payload
+     * Size of the header(In my case 24)
+     * Whether the payload is free or not
+     * Size of the payload
+     *
+     */
     void *iterator = (BLOCK *) head;
     int i = 1;
     while ((BLOCK *) iterator != NULL) {
+        //some conditionals to do a nice printout, should be self explanatory
         printf("\nI am header %d\nMy adress: %d\nAddress of my payload: %d\nMy size %d\nAm I free?: %s\nSize of my payload %d\n",
                i, iterator,
                iterator + block_size, block_size, ((BLOCK *) iterator)->size > 0 ? "NO" : "YES",
@@ -25,82 +54,156 @@ void iterate() {
 }
 
 void *find_free_block(unsigned int size) {
+    /** \brief finds a first block of free memory that fits the size criteria,
+    *   if none of the blocks fit the criteria or there is no space left it will @return NULL
+    *
+    *  @param size - size of the payload that we want to malloc
+    *  @return pointer to a beginning of a new allocated film linked list structure
+    */
+
+    /* Locals
+     * current          - iterates through the linked list of blocks looking for the required memory block
+    */
     //first fit
+    //start at the beginning of the list
     BLOCK *current = (BLOCK *) head;
     while (current != NULL) {
         if (current->size < 0) {
+            //if the node is free and there's space left to allocate the memory and create another header
+            //return the current node to malloc
             if (((current->size * -1)) > size + block_size) {
                 return current;
             }
         }
         current = current->next;
     }
-
+    //if there s no free node return NULL
     return NULL;
 
 }
 
 void *memory_alloc(unsigned int size) {
+    /** \brief allocates a chunk of memory from the static region, uses the find_free_block function to find a free block
+    *   of needed size.
+    *   Allocates the memory by changing the size value to a positive number and then splits the block to 2 blocks
+    *   One block of the size of the payload and another block of the rest of the size
+    *
+    *  @param size - size of the payload that we want to malloc
+    *  @return If the allocation goes well, returns an address to the beginning of the mallocated payload
+    */
+
+    /* Locals
+     * free          - variable to which a free block of memory is assigned
+     * next          - utility variable used to split the free chunk of memory
+    */
+
+    //precautions in cases that initialization goes wrong or we request a size smaller or equal to 0.
     if (head == NULL || size <= 0) {
         printf("Size is smaller than 0 or head points to NULL(bad initialization)\n");
         return NULL;
     }
+    //returns a free block of memory from the linked list
     void *free = find_free_block(size);
     //no free blocks left - memory full
     if (free == NULL) {
         printf("Not enough room to allocate a ptr of size %d\n", size);
         return NULL;
     } else {
+        //splits the blocks and adjusts the correct sizes
         BLOCK *next = free + block_size + size;
+        //pay attention to the implementation of sizing (<0 free, >0 allocated) hence -(+) = - /we still counted the correct
+        //size but kept the negative size so we don t have to multiply by -1
         next->size = ((BLOCK *) free)->size + block_size + size;
         ((BLOCK *) free)->size = (int) size;
+        //sets the correct adresses to previous and next blocks after splitting
         next->next = ((BLOCK *) free)->next; //next->next = NULL;
         ((BLOCK *) free)->next = next;
         next->prev = ((BLOCK *) free);
 
     }
+    //utility printout
     printf("Podarilo sa mi alokovat o velkosti %d, na adrese %d\n", size, free + block_size);
-
+    //returns the address of the payload
     return free + block_size;
-
 
 }
 
 int memory_free(void *valid_ptr) {
+    /** \brief frees a valid pointer(first address of the payload)
+    *    First we check if the valid pointer isn't already free
+    *    Then we free the pointer by changing the size to <0
+    *    Afterwards we look for possible merging of free block from left and right
+    *
+    *  @param valid_ptr - valid pointer
+    *  @return 1 or 0 depending on the success of the memory_free
+    */
+
+    /* Locals
+     * help          - points to the header of the block we want to free
+     * help2         - points to the next block of memory
+     * help3         - points to the previous block of memory
+    */
+    //header adress
     valid_ptr -= block_size;//zaciatok hlavicky;
     BLOCK *help = valid_ptr;
+    //there's nothing left to memory_free since the block is free already
     if (help->size < 0) {
         printf("Pointer beeing freed is already free");
         return 1;//nemame co odalokovat
     }
+    // "actual" memory free
     help->size *= -1;
     BLOCK *help2 = help->next;
     BLOCK *help3 = help->prev;
+    //merging of free blocks from the right
     if (help->next != NULL) {
+        //is the next block free?
         if (help2->size < 0) {
+            //change the size of the actual block
             help->size += help2->size - block_size;
+            //and merge
             help->next = help2->next;
         }
     }
+    //merging of free blocks from the left
     if (help->prev != NULL) {
         if (help3->size < 0) {
             help3->size += help->size - block_size;
             help3->next = help->next;
         }
     }
+    //returns 0 if successful
     return 0;
 
 }
 
 int memory_check(void *ptr) {
+    /** \brief checks if the pointer is in fact an address pointing to the beginning of a block's payload
+    *    First we check if the ptr is NULL or head is NULL or the pointer's out of range to the left
+    *    Then we iterate through the linked list looking for a match in the ptr address and block+block_size address(otherwise known as payload's address)
+    *    If the addresses match and we currently are in a free block return 0
+    *    If the ptr somehow ended up in the block's header memory range, we return 0
+    *    If the ptr is outside the manned region to the right return 0
+    *    Otherwise return 1
+    *  @param ptr - pointer we want to check
+    *  @return 1 or 0 depending on the success of our checks
+    */
+
+    /* Locals
+     * help          - points to the head, iterates through the linked list
+     * iterator      - points to help, checks whether the ptr is in the head address region
+     * help2         - utility pointer so our address counting doesn't get mismatched by something like this help += block_size(which would put us 24*sizeof(BLOCK) forward
+    */
     BLOCK *help = head;
     void *iterator;
+    //self explanatory
     if (head == NULL || ptr == NULL || ptr <= head) {
         return 0;
     }
-
+    //iterates through the linked list
     while (help != NULL) {
         void *help2 = help;
+        //iterates through the addresses from start to end of the block
         for (iterator = help; iterator <= help2 + help->size + block_size; iterator++) {
             if (iterator == ptr) {
                 if (iterator > help2 && iterator < help2 + block_size) {
@@ -115,19 +218,33 @@ int memory_check(void *ptr) {
         }
         help = help->next;
     }
+    //out of bounds to the right
     if (ptr > iterator) {
         printf("Pointer passed to memory check is out of bounds to right\n");
         return 0;
     }
 
-
+    //memory check successful
     return 1;
 }
 
 void memory_init(void *ptr, unsigned int size) {
+    /** \brief initializes our global pointer and clears the mempool of any garbage
+    *
+    *  s
+    *  @param ptr - beginning of the managed region
+    *  @param size - size of the region
+    *
+    */
 
+    /* Locals
+     * temp          - variable used to set the first block of the mempool
+    */
+    //set the global pointer
     head = ptr;
+    //clear the memory
     memset(head, 0, size);
+    //temporary variable so we can set next,prev to NULL and set the correct size to the first block
     BLOCK *temp = (BLOCK *) head;
     temp->size = (int) (-1 * (size - block_size)); //free<0  taken>0
     temp->next = NULL;
@@ -136,80 +253,7 @@ void memory_init(void *ptr, unsigned int size) {
 }
 
 
-#include <time.h>
-
-void z1_testovac(char *region, char **pointer, int minBlock, int maxBlock, int minMemory, int maxMemory,
-                 int testFragDefrag) {
-    srand(time(0));
-    unsigned int allocated = 0;
-    unsigned int mallocated = 0;
-    unsigned int allocated_count = 0;
-    unsigned int mallocated_count = 0;
-    unsigned int i = 0;
-    int random_memory = 0;
-    int random = 0;
-    memset(region, 0, 100000);
-    random_memory = (rand() % (maxMemory - minMemory + 1)) + minMemory;
-    memory_init(region + 500, random_memory);
-    if (testFragDefrag) {
-        do {
-            pointer[i] = memory_alloc(8);
-            //printf("Adresa mallocovaneho %p\n",pointer[i]);
-            if (pointer[i])
-                i++;
-        } while (pointer[i]);
-        for (int j = 0; j < i; j++) {
-            if (memory_check(pointer[j])) {
-                memory_free(pointer[j]);
-            } else {
-                printf("Error: Wrong memory check.\n");
-            }
-        }
-    }
-    i = 0;
-    while (allocated <= random_memory - minBlock) {
-        random = (rand() % (maxBlock - minBlock + 1)) + minBlock;
-        if (allocated + random > random_memory)
-            continue;
-        allocated += random;
-        allocated_count++;
-        pointer[i] = memory_alloc(random);
-        //printf("Adresa mallocovaneho %p\n",pointer[i]);
-        if (pointer[i]) {
-            i++;
-            mallocated_count++;
-            mallocated += random;
-        }
-    }
-    for (int j = 0; j < i; j++) {
-        if (memory_check(pointer[j])) {
-            memory_free(pointer[j]);
-        } else {
-            printf("Error: Wrong memory check.\n");
-        }
-    }
-    memset(region + 500, 0, random_memory);
-    for (int j = 0; j < 100000; j++) {
-        if (region[j] != 0) {
-            region[j] = 0;
-            printf("Error: Modified memory outside the managed region. index: %d\n", j - 500);
-        }
-    }
-    float result = ((float) mallocated_count / allocated_count) * 100;
-    float result_bytes = ((float) mallocated / allocated) * 100;
-    printf("Memory size of %d bytes: allocated %.2f%% blocks (%.2f%% bytes).\n", random_memory, result, result_bytes);
-}
-
-/*
-int main() {
-    char region[100000];
-    char *pointer[13000];
-    z1_testovac(region, pointer, 8, 24, 50, 100, 1);
-    z1_testovac(region, pointer, 8, 1000, 10000, 20000, 0);
-    z1_testovac(region, pointer, 8, 35000, 50000, 99000, 0);
-    return 0;
-}
-*/
+//return s random number in the range specified in the arguments
 int rand_int(int min, int max) {
     return (rand() % (max + 1 - min) + min);
 }
@@ -249,15 +293,7 @@ void test1() {
     frag_printout(50);
     iterate();
 
-    //ak len alokujem
-    //spocitam si vsetky hlavicky
-    //kolko z celkovej alokacie tvoria hlavicky
-    //toto je framgentácia
-
-    //5 hlaviciek
-    // a 5 blokov
-    //Bloky co som alokoval(5) / cela velkost je % co sa mi podarilo zaplnit
-    a = 11;
+    a = 15;
     for (int i = 0; i < 2; i++) {
         ptr[i] = memory_alloc(a);
         if (i % 2 == 0) {
@@ -266,7 +302,7 @@ void test1() {
             }
         }
     }
-    a = 21;
+    a = 24;
     for (int i = 0; i < 2; i++) {
         ptr[i] = memory_alloc(a);
         if (i % 2 == 0) {
@@ -432,7 +468,7 @@ void test4() {
     char region1[1000000];
     char *ptr[1000];
     int i = 0;
-    int random = rand_int(8, 5000);
+    int random = rand_int(8, 50000);
     printf("\n\n/-------------------TEST4---------------/\n");
     printf("Region size = 100000\nHead size = %d\nMaximum size you can alloc: %d\n", block_size,
            100000 - (2 * block_size) - 1);
@@ -447,7 +483,7 @@ void test4() {
             memory_free(ptr[j * 2]);
             memory_free(ptr[j * 2 - 1]);
         }
-        if(j==3){
+        if (j == 3) {
             break;
         }
     }
