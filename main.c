@@ -7,7 +7,7 @@
  * implementácia 1 projektu z DSA
  *
  * @author Daniel Gašparík
- *
+ *      https://github.com/DanielGasparik/dsa-malloc
  *
  * My implementation of memory_alloc is based on the implicit linked list of memory blocks
  * Each node of the list contains a pointer to the next and previous node
@@ -231,7 +231,7 @@ int memory_check(void *ptr) {
 void memory_init(void *ptr, unsigned int size) {
     /** \brief initializes our global pointer and clears the mempool of any garbage
     *
-    *  s
+    *
     *  @param ptr - beginning of the managed region
     *  @param size - size of the region
     *
@@ -259,6 +259,22 @@ int rand_int(int min, int max) {
 }
 
 void frag_printout(int size) {
+    /** \brief prints how much % of our mempool is taken up by headers after mallocation
+    *   and how much space we did occupy with our mem_alloc calls
+    *
+    *
+    *
+    *  @param size - size of the whole region available for mallocc
+    *
+    */
+
+    /* Locals
+     * hlavicka_count          - counts how many heads did we allocate
+     * iterator                - iterates through the linked list
+     * obsadene_bytes          - how many bytes did we allocate
+     * frag                    - the ratio between sum of head sizez / by the mempool size
+     * zaplnilo                - the ratio between sum of payloads / by the mempool size
+    */
     double hlavicka_count = 0;
     BLOCK *iterator = head;
     double obsadene_bytes = 0;
@@ -276,13 +292,27 @@ void frag_printout(int size) {
 }
 
 void test1() {
+    /** \brief tests our memory_alloc,nemory_check,memory_free,memory_init calls with various different sizes, callings and test scenarios
+    *   All the tests are similiar in structure so I will only document this one
+    *
+    *
+   */
 
+    /* Locals
+     *  region1       -this represents a mempool of a certain size
+     *  region2       -the sizes usually go up
+     *  region3       -this behaviour repeats in almost all test cases
+     *  ptr           -pointer arrays so we don't have to create many pointer variables to which we will malloc
+     *  ptr2
+     *  ptr3
+    */
     char region1[50];
     char region2[100];
     char region3[200];
     char *ptr[2];
     char *ptr2[4];
     char *ptr3[8];
+    //inits a region with a fixed size
     memory_init(region1, 50);
     printf("/-------------------TEST1a---------------/\n");
     printf("Region size = 50\nHead size = %d\nMaximum size you can alloc: %d\n", block_size, 50 - (2 * block_size) - 1);
@@ -290,7 +320,9 @@ void test1() {
     for (int i = 0; i < 2; i++) {
         ptr[i] = memory_alloc(a);
     }
+    //prints out the fragmentation and occupied blocks
     frag_printout(50);
+    //iterates through the linked list printing all the information it can
     iterate();
 
     a = 15;
@@ -354,6 +386,7 @@ void test2() {
     printf("\n\n/-------------------TEST2a---------------/\n");
     printf("Region size = 50\nHead size = %d\nMaximum size you can alloc: %d\n", block_size, 50 - (2 * block_size) - 1);
     memory_init(region1, 50);
+    //my tests are based on a principle of allocationg untill I can't allocate a requested amount -> hence the while loop
     while ((ptr[i++] = memory_alloc(random)) != NULL) {
         random = rand_int(8, 24);
 
@@ -495,9 +528,11 @@ void test4() {
 
 
 int main() {
+    //main
+    //
     srand(time(0));
     char region[100];
-
+    //run tests
     test1();
     test2();
     test3();
