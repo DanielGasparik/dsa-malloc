@@ -22,7 +22,7 @@ typedef struct mem_block {
     //previous block
     void *prev;
     //size of the payload; can be >0(if occupied) or <0(if free)
-    int size; //struct size + payload
+    int size; //payload
 } BLOCK;
 //size of block macro, clang, macOS 10.15.5 -> 24B
 #define block_size sizeof(BLOCK)
